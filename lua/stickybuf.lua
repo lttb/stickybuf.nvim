@@ -47,6 +47,10 @@ local function _on_buf_enter(bufnr)
       vim.fn.win_execute(winid, "noau buffer " .. vim.w.sticky_original_bufnr)
       -- Then open the new buffer in the appropriate location
       vim.defer_fn(function()
+        if not vim.api.nvim_buf_is_valid(bufnr) then
+          return
+        end
+
         if sticky_conf.handle_foreign_buffer then
           sticky_conf.handle_foreign_buffer(bufnr)
         else
@@ -293,10 +297,10 @@ M.should_auto_pin = function(bufnr)
     -- Only pin fern if it was opened as a split (has fixed height/width)
     return "filetype"
   elseif
-    vim.startswith(filetype, "Neogit")
-    -- NeogitCommitMessage relies on BufUnload, can't apply to it
-    -- https://github.com/NeogitOrg/neogit/blob/51a6e6c8952b361300be57b36c8e1b973880cdd7/lua/neogit/buffers/commit_editor/init.lua#L43
-    and filetype ~= "NeogitCommitMessage"
+      vim.startswith(filetype, "Neogit")
+      -- NeogitCommitMessage relies on BufUnload, can't apply to it
+      -- https://github.com/NeogitOrg/neogit/blob/51a6e6c8952b361300be57b36c8e1b973880cdd7/lua/neogit/buffers/commit_editor/init.lua#L43
+      and filetype ~= "NeogitCommitMessage"
   then
     if vim.fn.winnr("$") > 1 then
       return "filetype"
